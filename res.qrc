@@ -1,0 +1,28 @@
+<RCC>
+  <qresource prefix="img/">
+    <file>AR教学视频v1.0/res/user_icon.jpg</file>
+    <file>AR教学视频v1.0/assets/scan_background.jpg</file>
+    <file>AR教学视频v1.0/res/theqrcode.png</file>
+    <file>AR教学视频v1.0/assets/default.png.png</file>
+    <file>AR教学视频v1.0/assets/default_scan.png</file>
+    <file>AR教学视频v1.0/assets/assets.rar</file>
+    <file>AR教学视频v1.0/assets/banner.png.png</file>
+    <file>AR教学视频v1.0/assets/default.png.png</file>
+    <file>AR教学视频v1.0/assets/finish_icon_calories.png.png</file>
+    <file>AR教学视频v1.0/assets/finish_icon_score.png.png</file>
+    <file>AR教学视频v1.0/assets/finish_icon_time.png.png</file>
+    <file>AR教学视频v1.0/assets/finish_score.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_detection.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_icon_calories.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_icon_score.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_icon_taichi.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_pbar_calories.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_Pbar_score.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_Qigong.png.png</file>
+    <file>AR教学视频v1.0/assets/play page_Yoga.png.png</file>
+    <file>AR教学视频v1.0/assets/playpage_icon_Bodybuilding.png.png</file>
+  </qresource>
+  <qresource prefix="font">
+    <file>pingfang_sc.ttf</file>
+  </qresource>
+</RCC>
