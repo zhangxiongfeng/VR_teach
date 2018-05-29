@@ -198,7 +198,6 @@ class Jump_to(object):
 
         self.w3.exec_()
 
-
     def update_timer_display(self):
         self.duration = self.duration - 1
 
@@ -208,9 +207,6 @@ class Jump_to(object):
         # 播放结束后自动跳转
         if self.duration == 0:
             self.jump_to_result()
-
-
-
 
 # 创建服务器连接
 class recv_socket(QThread):
