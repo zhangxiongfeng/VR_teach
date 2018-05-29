@@ -28,7 +28,7 @@ import cv2,time
 
 SERVER_URL = "ws://dev-accwssail.healthmall.cn/server/bodyAnaylzer/data"
 MID = "0001"
-
+play_times = 0
 
 class globalData(object):
     def __init__(self):
@@ -39,7 +39,6 @@ class globalData(object):
             "memHeadImg": "",
             "sectionList": "",
             "courseName": "",
-            "play_times": 0
         }
 
     def set_data(self, data, value):
@@ -59,9 +58,6 @@ class globalData(object):
 class Scan_dialog(QtWidgets.QDialog, scan_dialog_ui.Ui_Dialog):
     def __init__(self, parent=None):
         super(Scan_dialog, self).__init__()
-        # global memHeadImg
-        # global memberName
-        # global memberId
 
         # TODO 初始化个人信息
         data.__init__()
@@ -339,9 +335,6 @@ class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
         super(VideoWindow, self).__init__(parent)
 
-        global play_times
-        play_times = 0
-
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         self.camera = QCamera(0)
         self.cameraviewfinder = QCameraViewfinder()
@@ -363,26 +356,31 @@ class VideoWindow(QMainWindow):
     def play_next(self):
         global play_times
 
-        if play_times >= len(self.fileNameList):
+        if play_times == len(self.fileNameList):
                 self.timer_play.stop()
                 return
 
         single_file = self.fileNameList[play_times]
-
-        if single_file != '':
+        try:
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(single_file)))
+        except Exception:
+            print("配置视频播放出错")
+            print(Exception)
 
+        #播放视频
         self.mediaPlayer.play()
 
         # 开启倒计时,进行连续播放
-        single_time = math.ceil(self.getDuration(single_file))
+        self.single_time = math.ceil(self.getDuration(single_file))
 
         self.timer_play = QtCore.QTimer()
         self.timer_play.timeout.connect(self.play_next)
 
         # 定时器以毫秒作为单位
-        self.timer_play.start(single_time * 1000)
+        self.timer_play.start(self.single_time * 1000)
+
         play_times = play_times + 1
+
 
     def camera_start(self):
         # 开启摄像头
@@ -390,18 +388,22 @@ class VideoWindow(QMainWindow):
         self.camera.start()
 
     # 获取视频时长(单位为秒)
-    def getDuration(self,fileName):
+    def getDuration(self, fileName):
         total_times = 0
 
         if type(fileName) != list:
             clip = VideoFileClip(fileName)
-            return clip.duration
+            single_time = clip.duration
+            clip.reader.close()
+            clip.audio.reader.close_proc()
+            return single_time
 
         for f in fileName:
             clip = VideoFileClip(f)
             times = clip.duration
             total_times = total_times + times
-
+            clip.reader.close()
+            clip.audio.reader.close_proc()
         return total_times
 
     def pause(self):
