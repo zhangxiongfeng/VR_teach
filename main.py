@@ -393,7 +393,6 @@ class VideoWindow(QMainWindow):
         self.timer_play.start(single_time * 1000)
         play_times = play_times + 1
 
-
     def camera_start(self):
         # 开启摄像头
         self.cameraviewfinder.resize(640, 480)

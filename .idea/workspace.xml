@@ -41,8 +41,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="570">
-              <caret line="447" column="24" selection-start-line="447" selection-start-column="24" selection-end-line="447" selection-end-column="24" />
+            <state relative-caret-position="703">
+              <caret line="319" column="11" selection-start-line="319" selection-start-column="11" selection-end-line="319" selection-end-column="11" />
               <folding>
                 <element signature="e#24#40#0" expanded="true" />
               </folding>
@@ -77,7 +77,7 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="113" />
     <option name="y" value="-8" />
     <option name="width" value="1815" />
@@ -106,8 +106,8 @@
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="main&#9;FILE&#9;file://D:/桌面/VR_teach/main.py&#10;cam&#9;null&#9;null&#10;me&#9;null&#9;null&#10;ma&#9;null&#9;null" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="E:/枫叶/Git/git-bash.exe" />
-    <property name="settings.editor.selected.configurable" value="Images" />
+    <property name="last_opened_file_path" value="E:/枫叶/Git/git-cmd.exe" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -194,20 +194,21 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49861035" weight="0.32892057" />
-      <window_info active="true" anchor="bottom" id="Event Log" order="7" sideWeight="0.50104165" side_tool="true" visible="true" weight="0.3280757" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50104165" side_tool="true" weight="0.3280757" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49895832" visible="true" weight="0.3280757" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49895832" visible="true" weight="0.18401682" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49861035" weight="0.32892057" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4913928" visible="true" weight="0.067708336" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49226806" visible="true" weight="0.067708336" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" weight="0.32960895" />
       <window_info anchor="right" id="SciView" order="3" weight="0.3290717" />
-      <window_info id="Structure" order="1" sideWeight="0.5086072" side_tool="true" visible="true" weight="0.067708336" />
+      <window_info id="Structure" order="1" sideWeight="0.507732" side_tool="true" visible="true" weight="0.067708336" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4991662" weight="0.26708728" />
       <window_info id="Favorites" order="2" sideWeight="0.5015432" side_tool="true" weight="0.12849163" />
       <window_info anchor="right" id="R Graphics" order="3" />
@@ -425,8 +426,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
-          <caret line="447" column="24" selection-start-line="447" selection-start-column="24" selection-end-line="447" selection-end-column="24" />
+        <state relative-caret-position="703">
+          <caret line="319" column="11" selection-start-line="319" selection-start-column="11" selection-end-line="319" selection-end-column="11" />
           <folding>
             <element signature="e#24#40#0" expanded="true" />
           </folding>
