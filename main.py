@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+# TODO 清空无用的import
 import threading
 import urllib.request
 import websocket
@@ -82,22 +83,21 @@ class Wait_ui(QtWidgets.QDialog,wait_select_ui.Ui_Dialog):
 
 class Player_ui(QtWidgets.QDialog,player_ui.Ui_Dialog):
     def __init__(self):
-        super(Player_ui,self).__init__()
+        super(Player_ui, self).__init__()
         self.setupUi(self)
 
 class Result_ui(QtWidgets.QDialog,result_ui.Ui_Dialog):
     def __init__(self):
-        super(Result_ui,self).__init__()
+        super(Result_ui, self).__init__()
         self.setupUi(self)
 
+        # TODO 自动加锁时间需要调整
         self.timer_result = QtCore.QTimer()
-        self.timer.timeout.connect(self.auto_finish)
-        # 5秒后自动加锁
-        self.timer.start(5 * 1000)
-    def auto_finish(self):
+        self.timer_result.timeout.connect(self.auto_finish)
+        self.timer_result.start(5 * 1000)
 
+    def auto_finish(self):
         j.jump(["jumpToScan", ])
-        pass
 
 # 创建跳转对象
 class Jump_to(object):
@@ -115,14 +115,17 @@ class Jump_to(object):
 
         if command == "jumpToScan":
             # 关闭上层窗口,防止异常添加保护
-            if w.isVisible():
-                w.reject()
-            elif self.w2.isVisible():
-                self.w2.reject()
-            elif self.w3.isVisible():
-                self.w3.reject()
-            elif self.w4.isVisible():
-                self.w4.reject()
+            try:
+                if w.isVisible():
+                    w.reject()
+                elif self.w2.isVisible():
+                    self.w2.reject()
+                elif self.w3.isVisible():
+                    self.w3.reject()
+                elif self.w4.isVisible():
+                    self.w4.reject()
+            except Exception:
+                print(Exception)
 
             self.w1 = Scan_dialog()
             self.w1.exec_()
@@ -206,7 +209,8 @@ class Jump_to(object):
 
         # 播放结束后自动跳转
         if self.duration == 0:
-            self.jump_to_result()
+            if self.w3.isVisible():
+                self.jump_to_result()
 
 # 创建服务器连接
 class recv_socket(QThread):
@@ -272,7 +276,8 @@ class recv_socket(QThread):
             print("返回二维码界面")
 
             # 发送跳转信号
-            self.emit_signal("jumpToScan")
+            messList = ["jumpToScan",]
+            self.emit_signal(messList)
 
             send_message = {"message": "lock ok"}
             ws.send(json.dumps(send_message))
@@ -319,7 +324,6 @@ class recv_socket(QThread):
     # 发射信号
     def emit_signal(self, messList):
         self.trigger.emit(messList)
-
 
 # 视频播放
 class VideoWindow(QMainWindow):
@@ -377,12 +381,14 @@ class VideoWindow(QMainWindow):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(single_file)))
 
         self.mediaPlayer.play()
+
         # 开启倒计时,进行连续播放
         single_time = math.ceil(self.getDuration(single_file))
 
         # TODO 连续播放时，同时触发计时器
         self.timer_play = QtCore.QTimer()
         self.timer_play.timeout.connect(self.play_next)
+
         # 定时器以毫秒作为单位
         self.timer_play.start(single_time * 1000)
         play_times = play_times + 1
