@@ -116,9 +116,7 @@ class Jump_to(object):
         if command == "jumpToScan":
             # 关闭上层窗口,防止异常添加保护
             try:
-                if w.isVisible():
-                    w.reject()
-                elif self.w2.isVisible():
+                if self.w2.isVisible():
                     self.w2.reject()
                 elif self.w3.isVisible():
                     self.w3.reject()
@@ -127,8 +125,12 @@ class Jump_to(object):
             except Exception:
                 print(Exception)
 
-            self.w1 = Scan_dialog()
-            self.w1.exec_()
+            # 判断是否在视频播放阶段
+            try:
+                self.player.pause()
+            except Exception:
+                print(Exception)
+            w.exec_()
 
         elif command == "jumpToWait":
             # 关闭上层窗口
@@ -147,6 +149,7 @@ class Jump_to(object):
          # 关闭上层窗口
         self.w3.reject()
 
+        # TODO 完善下面这句代码
         self.player.pause()
 
         self.w4 = Result_ui()
@@ -277,8 +280,9 @@ class recv_socket(QThread):
 
             # 发送跳转信号
             messList = ["jumpToScan",]
-            self.emit_signal(messList)
 
+
+            self.emit_signal(messList)
             send_message = {"message": "lock ok"}
             ws.send(json.dumps(send_message))
 
@@ -351,22 +355,8 @@ class VideoWindow(QMainWindow):
         sys.exit(app.exec_())
 
     def play(self, fileNameList):
-
         self.fileNameList = fileNameList
         self.play_next()
-
-        '''
-        # 截取摄像头图像
-        camera_capture = cv2.VideoCapture()
-        while True:
-            ret, camera_frame = camera_capture.read()
-            if ret:
-                self.displayImage(camera_frame)
-            else:
-                break
-        camera_capture.release()
-        cv2.destroyAllWindows()
-        '''
 
     def play_next(self):
         global play_times
@@ -385,7 +375,6 @@ class VideoWindow(QMainWindow):
         # 开启倒计时,进行连续播放
         single_time = math.ceil(self.getDuration(single_file))
 
-        # TODO 连续播放时，同时触发计时器
         self.timer_play = QtCore.QTimer()
         self.timer_play.timeout.connect(self.play_next)
 
@@ -398,6 +387,7 @@ class VideoWindow(QMainWindow):
         self.cameraviewfinder.resize(640, 480)
         self.camera.start()
 
+    # 获取视频时长(单位为秒)
     def getDuration(self,fileName):
         total_times = 0
 
@@ -407,7 +397,6 @@ class VideoWindow(QMainWindow):
         for f in fileName:
             clip = VideoFileClip(f)
             times = clip.duration
-
             total_times = total_times + times
 
         return total_times
@@ -415,25 +404,24 @@ class VideoWindow(QMainWindow):
     def pause(self):
        self.mediaPlayer.pause()
 
-    def displayImage(self, img):
-        self.scene1.clear()
 
-        pixMap = QPixmap(img)
-        w, h = pixMap.width(), pixMap.height()
-        self.scene1.addPixmap(pixMap)
-        self.view1.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-        self.scene1.update()
+    # def displayImage(self, img):
+    #     self.scene1.clear()
+    #
+    #     pixMap = QPixmap(img)
+    #     w, h = pixMap.width(), pixMap.height()
+    #     self.scene1.addPixmap(pixMap)
+    #     self.view1.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
+    #     self.scene1.update()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     w = Scan_dialog()
     w.show()
 
-    '''
-    # 加载字体
-    QtGui.QFontDatabase.addApplicationFont(":/font/pingfang_sc_cu.ttf")
-    app.setFont(QFont("pingfang_sc_cu"))
-    '''
+    #  加载字体
+    # QtGui.QFontDatabase.addApplicationFont(":/font/pingfang_sc_cu.ttf")
+    # app.setFont(QFont("pingfang_sc_cu"))
 
     socket_towait = recv_socket()
     j = Jump_to()
