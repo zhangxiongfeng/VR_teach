@@ -69,8 +69,8 @@ class Scan_dialog(QtWidgets.QDialog, scan_dialog_ui.Ui_Dialog):
 
         self.make_qr(qrcodeInfo)
 
-        # 更新qrc文件
-        os.system('pyrcc5.exe res.qrc -o res_rc.py')
+        # # 更新qrc文件
+        # os.system('pyrcc5.exe res.qrc -o res_rc.py')
 
         # 替换二维码图片
         self.widget.setStyleSheet("background:white;\n"
@@ -111,254 +111,24 @@ class Result_ui(QtWidgets.QDialog,result_ui.Ui_Dialog):
         self.timer_result.stop()
         j.jump("jumpToScan")
 
-# 创建跳转对象
-class Jump_to(object):
-    def __init__(self):
-        self.duration = 0
-        self.memberId = 0
-        self.memHeadImg = ""
-        self.memberName = ""
-        self.courseName = ""
-        self.sectionList = ""
-
-    def jump(self, command):
-        global play_times
-
-        if command == "jumpToScan":
-            # 关闭上层窗口,防止异常添加保护
-            try:
-                if self.w2.isVisible():
-                    self.w2.reject()
-                elif self.w3.isVisible():
-                    self.w3.reject()
-                elif self.w4.isVisible():
-                    self.w4.reject()
-            except Exception:
-                print(Exception)
-
-            # 重置播放次数
-            play_times = 0
-
-            # 判断是否在视频播放阶段
-            try:
-                self.player.pause()
-            except Exception:
-                print(Exception)
-
-            w.show()
-
-        elif command == "jumpToWait":
-            # 关闭上层窗口
-            w.reject()
-
-            self.w2 = Wait_ui()
-            self.w2.show()
-
-        elif command == "jumpToPlay":
-            
-            self.jump_to_play()
-
-        elif command == "jumpToResult":
-
-            # 重置播放次数
-            play_times = 0
-
-            self.jump_to_result()
-
-    def jump_to_result(self):
-         # 关闭上层窗口
-        self.w3.reject()
-
-        # TODO 完善下面这句代码
-        self.player.pause()
-
-        self.w4 = Result_ui()
-        self.w4.show()
-
-    def jump_to_play(self):
-
-        # 关闭上层窗口
-        self.w2.reject()
-        self.w3 = Player_ui()
-
-        # 获取全局变量
-        self.courseName = data.get_data("courseName")
-        self.memberName = data.get_data("memberName")
-        self.memHeadImg = data.get_data("memHeadImg")
-
-        # 保存学生头像，覆盖默认图片
-        path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
-        urllib.request.urlretrieve(self.memHeadImg, path)
-
-        # 设置学生头像
-        self.w3.user_icon.setStyleSheet("border-image: url(:/img/AR教学视频v1.0/res/user_icon.jpg);\n"
-    "border:NONE\n")
-
-        # TODO 需要老师名称和头像地址
-        self.w3.tech_name.setText("<html><head/><body><p><span style=\" font-size:26pt; color:#ffffff;\">陈老师</span></p></body></html>")
-        self.w3.course_name.setText("<html><head/><body><p><span style=\" font-size:14pt; color:#fff;\">"+self.courseName+"</span></p></body></html>")
-        self.w3.cal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">320</span><span style=\" font-size:22pt; color:#939a99;\">千卡</span></p></body></html>")
-        self.w3.user_name.setText( "<html><head/><body><p><span style=\" font-family:\'PingFang SC\'; font-size:26pt; color:#ffffff;\">"+self.memberName+"</span></p></body></html>")
-        self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
-
-        # TODO 加上视频播放功能
-        fileNameList = [os.getcwd()+'\some2.mp4', os.getcwd()+'\some3.mp4', ]
-
-        self.player = VideoWindow()
-
-        # 初始化播放时长,向上取整
-        self.duration = math.ceil(self.player.getDuration(fileNameList))
-        timer_text = ("%02d:%02d" % (self.duration / 60, (self.duration % 60)))
-        self.w3.time.setText("<html><head/><body><p><span style=\" font-size:24pt; color:#ffffff;\">" + str(timer_text) + "</span></p></body></html>")
-
-        # 初始化定时器
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_timer_display)
-
-        # 开始播放,开启倒计时
-        self.player.play(fileNameList)
-        self.timer.start(1000)
-        #开启摄像头
-        self.player.camera_start()
-        self.w3.horizontalLayout_2.addWidget(self.player.videoWidget)
-        self.w3.horizontalLayout_2.addWidget(self.player.cameraviewfinder)
-
-        # 设置居中平分
-        self.w3.horizontalLayout_2.setStretch(0, 1)
-        self.w3.horizontalLayout_2.setStretch(1, 1)
-
-        self.w3.show()
-
-    def update_timer_display(self):
-        self.duration = self.duration - 1
-
-        timer_text = ("%02d:%02d" % (self.duration / 60, (self.duration % 60)))
-        self.w3.time.setText("<html><head/><body><p><span style=\" font-size:24pt; color:#ffffff;\">" + str(timer_text) + "</span></p></body></html>")
-
-        # 播放结束后自动跳转
-        if self.duration == 0:
-            # 关闭定时器
-            self.timer.stop()
-
-            if self.w3.isVisible():
-                self.jump_to_result()
-
-# 创建服务器连接
-class recv_socket(QThread):
-    # 声明信号，发送信号时传入list
-    trigger = pyqtSignal(str)
-
-    def __init__(self):
-        super(recv_socket, self).__init__()
-        pass
-
-    # QThread的第二线程
-    def run(self):
-        # 创建连接
-        websocket.enableTrace(True)
-        self.ws = websocket.WebSocketApp(SERVER_URL ,
-               on_message = self.on_message,
-               on_error = self.on_error,
-               on_close = self.on_close
-                )
-
-        self.ws.on_open = self.on_open
-        self.ws.run_forever()
-
-    def on_message(self, ws, message_server):
-
-        # json转化为dict
-        dict_message = json.loads(message_server)
-
-        message = dict_message["message"]
-        print(message)
-
-        if message == "register success":
-            # TODO 需要一些保护机制
-            pass
-
-        elif message == "register failed":
-            print("设备注册失败,尝试重新发送注册信息")
-            print(self.ws)
-            self.on_open(self, self.ws)
-
-        elif "failed" in message:
-            message_split = message.split()
-            print("[%s]出错:[%s]" % (message_split[0], message_split[1]))
-
-        # 解锁界面
-        elif message == "unlock":
-
-            # 设置全局变量
-            data.set_data("memberId", dict_message["memberId"])
-            data.set_data("memberName", dict_message["memberName"])
-            data.set_data("memHeadImg", dict_message["memHeadImg"])
-
-            # 页面信号
-            self.trigger.emit("jumpToWait")
-
-            # 以json形式返回message
-            send_message = {"message": "unlock ok"}
-            ws.send(json.dumps(send_message))
-        
-        elif message == "lock":
-            print("返回二维码界面")
-
-            # 发送跳转信号
-            self.trigger.emit("jumpToScan")
-
-            send_message = {"message": "lock ok"}
-
-            ws.send(json.dumps(send_message))
-
-        elif message == "executeList":
-            print("启动视频")
-
-            data.set_data("courseName", dict_message["courseName"])
-            data.set_data("sectionList", dict_message["sectionList"])
-
-            # 发射参数为命名+课程List+课程名称
-            self.trigger.emit("jumpToPlay")
-
-            # 以json形式返回message
-            send_message = {"message": "executeList ok"}
-            ws.send(json.dumps(send_message))
-
-        elif message == "closure":
-            print("结束视频")
-
-            # 发送跳转信号
-            self.trigger.emit("jumpToResult")
-            # 以json形式返回message
-            send_message = {"message": "closure ok"}
-
-            ws.send(json.dumps(send_message))
-
-    def on_error(self, ws, error):
-        print(error)
-
-    def on_open(self, ws):
-        # 发送机器唯一标识码
-        ws.send("{\"message\":\"register\",\"deviceID\":\"AR000001\"}")
-
-    def on_close(self, ws):
-        print("close:")
-        print(ws)
-
 # 视频播放
 class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
         super(VideoWindow, self).__init__(parent)
 
+    def setupVideoUi(self):
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+
         self.camera = QCamera(0)
         self.cameraviewfinder = QCameraViewfinder()
         self.cameramode = self.camera.CaptureMode(2)
         self.cameraimgcap = QCameraImageCapture(self.camera)
+
         self.videoWidget = QVideoWidget()
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
-        self.cameraviewfinder.show()
+
+        # self.cameraviewfinder.show()
         self.camera.setViewfinder(self.cameraviewfinder)
 
     def exitCall(self):
@@ -398,7 +168,6 @@ class VideoWindow(QMainWindow):
 
         play_times = play_times + 1
 
-
     def camera_start(self):
         # 开启摄像头
         self.cameraviewfinder.resize(640, 480)
@@ -426,10 +195,256 @@ class VideoWindow(QMainWindow):
     def pause(self):
        self.mediaPlayer.pause()
 
+# 创建跳转对象
+class Jump_to(VideoWindow):
+
+    def __init__(self):
+        super(Jump_to, self).__init__()
+        self.duration = 0
+        self.memberId = 0
+        self.memHeadImg = ""
+        self.memberName = ""
+        self.courseName = ""
+        self.sectionList = ""
+        self.start_time = 0
+        self.fileNameList = []
+    def jump(self, command):
+        global play_times
+
+        if command == "jumpToScan":
+            # 关闭上层窗口,防止异常添加保护
+            try:
+                if self.w2.isVisible():
+                    self.w2.reject()
+                elif self.w3.isVisible():
+                    self.w3.reject()
+                elif self.w4.isVisible():
+                    self.w4.reject()
+            except Exception:
+                print(Exception)
+
+            # 重置播放次数
+            play_times = 0
+
+            # 判断是否在视频播放阶段
+            try:
+                self.pause()
+                self.timer_play.stop()
+
+            except Exception:
+                print(Exception)
+
+            w.show()
+
+        elif command == "jumpToWait":
+            print(command)
+            # 关闭上层窗口
+            w.setHidden(True)
+
+            # 保存学生头像，覆盖默认图片
+            self.memHeadImg = data.get_data("memHeadImg")
+            path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
+            urllib.request.urlretrieve(self.memHeadImg, path)
+
+            self.w2 = Wait_ui()
+            self.w2.show()
+
+        elif command == "jumpToPlay":
+            self.start_time = time.time()
+            self.jump_to_play()
+
+        elif command == "jumpToResult":
+            # 重置播放次数
+            play_times = 0
+
+            self.jump_to_result()
+
+    def jump_to_result(self):
+         # 关闭上层窗口
+        self.w3.setHidden(True)
+
+        # TODO 完善下面这句代码
+        self.pause()
+
+        self.w4 = Result_ui()
+        self.w4.show()
+
+    def jump_to_play(self):
+        # 关闭上层窗口
+        self.w2.setHidden(True)
+
+        # 启动等待界面
+        self.splash = QtWidgets.QSplashScreen(QPixmap('wait'), Qt.WindowStaysOnTopHint)
+        self.splash.show()
+
+        self.w3 = Player_ui()
+        # 获取全局变量
+        self.courseName = data.get_data("courseName")
+        self.memberName = data.get_data("memberName")
+
+        # 设置学生头像
+        self.w3.user_icon.setStyleSheet("border-image: url(:/img/AR教学视频v1.0/res/user_icon.jpg);\n"
+    "border:NONE\n")
+
+        # TODO 需要老师名称和头像地址
+        self.w3.tech_name.setText("<html><head/><body><p><span style=\" font-size:26pt; color:#ffffff;\">陈老师</span></p></body></html>")
+        self.w3.course_name.setText("<html><head/><body><p><span style=\" font-size:14pt; color:#fff;\">"+self.courseName+"</span></p></body></html>")
+        self.w3.cal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">320</span><span style=\" font-size:22pt; color:#939a99;\">千卡</span></p></body></html>")
+        self.w3.user_name.setText( "<html><head/><body><p><span style=\" font-family:\'PingFang SC\'; font-size:26pt; color:#ffffff;\">"+self.memberName+"</span></p></body></html>")
+        self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
+
+        # TODO 加上视频播放功能
+        self.fileNameList = [os.getcwd()+'\some2.mp4', os.getcwd()+'\some3.mp4', ]
+
+        # 创建播放器和摄像头UI
+        VideoWindow.setupVideoUi(self)
+
+        # 初始化播放时长,向上取整
+        self.duration = math.ceil(self.getDuration(self.fileNameList))
+        timer_text = ("%02d:%02d" % (self.duration / 60, (self.duration % 60)))
+        self.w3.time.setText("<html><head/><body><p><span style=\" font-size:24pt; color:#ffffff;\">" + str(timer_text) + "</span></p></body></html>")
+
+        # 初始化定时器
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_timer_display)
+
+        # 开始播放,开启倒计时
+        self.play(self.fileNameList)
+        self.timer.start(1000)
+
+        #开启摄像头
+        self.camera_start()
+        self.w3.horizontalLayout_2.addWidget(self.videoWidget)
+        self.w3.horizontalLayout_2.addWidget(self.cameraviewfinder)
+
+        # 设置居中平分
+        self.w3.horizontalLayout_2.setStretch(0, 1)
+        self.w3.horizontalLayout_2.setStretch(1, 1)
+
+        finish_time = time.time() - self.start_time
+        print(finish_time)
+
+        self.splash.finish(self.w3)
+        self.w3.show()
+
+
+    def update_timer_display(self):
+        self.duration = self.duration - 1
+
+        timer_text = ("%02d:%02d" % (self.duration / 60, (self.duration % 60)))
+        self.w3.time.setText("<html><head/><body><p><span style=\" font-size:24pt; color:#ffffff;\">" + str(timer_text) + "</span></p></body></html>")
+
+        # 播放结束后自动跳转
+        if self.duration == 0:
+            # 关闭定时器
+            self.timer.stop()
+            if self.w3.isVisible():
+                self.jump_to_result()
+
+# 创建服务器连接
+class recv_socket(QThread):
+    # 声明信号，发送信号时传入list
+    trigger = pyqtSignal(str)
+
+    def __init__(self):
+        super(recv_socket, self).__init__()
+        pass
+
+    # QThread的第二线程
+    def run(self):
+        # 创建连接
+        websocket.enableTrace(True)
+        self.ws = websocket.WebSocketApp(SERVER_URL ,
+               on_message = self.on_message,
+               on_error = self.on_error,
+               on_close = self.on_close
+                )
+
+        self.ws.on_open = self.on_open
+        self.ws.run_forever()
+
+    def on_message(self, ws, message_server):
+        # json转化为dict
+        dict_message = json.loads(message_server)
+
+        message = dict_message["message"]
+
+        print(message)
+
+        if message == "register success":
+            # TODO 需要一些保护机制
+            pass
+
+        elif message == "register failed":
+            print("设备注册失败,尝试重新发送注册信息")
+            print(self.ws)
+            self.on_open(self, self.ws)
+
+        elif "failed" in message:
+            message_split = message.split()
+            print("[%s]出错:[%s]" % (message_split[0], message_split[1]))
+
+        # 解锁界面
+        elif message == "unlock":
+            # 设置全局变量
+            data.set_data("memberId", dict_message["memberId"])
+            data.set_data("memberName", dict_message["memberName"])
+            data.set_data("memHeadImg", dict_message["memHeadImg"])
+
+            # 页面信号
+            self.trigger.emit("jumpToWait")
+
+            # 以json形式返回message
+            send_message = {"message": "unlock ok"}
+            ws.send(json.dumps(send_message))
+        
+        elif message == "lock":
+            # 发送跳转信号
+            self.trigger.emit("jumpToScan")
+
+            send_message = {"message": "lock ok"}
+
+            ws.send(json.dumps(send_message))
+
+        elif message == "executeList":
+
+            data.set_data("courseName", dict_message["courseName"])
+            data.set_data("sectionList", dict_message["sectionList"])
+
+            self.trigger.emit("jumpToPlay")
+
+            # 以json形式返回message
+            send_message = {"message": "executeList ok"}
+            ws.send(json.dumps(send_message))
+
+        elif message == "closure":
+            print("结束视频")
+
+            # 发送跳转信号
+            self.trigger.emit("jumpToResult")
+            # 以json形式返回message
+            send_message = {"message": "closure ok"}
+
+            ws.send(json.dumps(send_message))
+
+    def on_error(self, ws, error):
+        print(error)
+
+    def on_open(self, ws):
+
+        # 发送机器唯一标识码
+        ws.send("{\"message\":\"register\",\"deviceID\":\"AR000001\"}")
+
+    def on_close(self, ws):
+        print("close:")
+        print(ws)
+        # 尝试重新连接
+        self.run()
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
-    #初始化变量
+    # 初始化变量
     data = globalData()
 
     w = Scan_dialog()
