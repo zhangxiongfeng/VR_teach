@@ -141,8 +141,6 @@ class VideoWindow(QMainWindow):
     def play_next(self):
         global play_times
 
-        print(play_times)
-
         if play_times == len(self.fileNameList):
                 self.timer_play.stop()
                 return
@@ -234,10 +232,9 @@ class Jump_to(VideoWindow):
             except Exception:
                 print(Exception)
 
-            w.show()
+            w.showFullScreen()
 
         elif command == "jumpToWait":
-            print(command)
             # 关闭上层窗口
             w.setHidden(True)
 
@@ -247,7 +244,7 @@ class Jump_to(VideoWindow):
             urllib.request.urlretrieve(self.memHeadImg, path)
 
             self.w2 = Wait_ui()
-            self.w2.show()
+            self.w2.showFullScreen()
 
         elif command == "jumpToPlay":
             self.start_time = time.time()
@@ -267,7 +264,7 @@ class Jump_to(VideoWindow):
         self.pause()
 
         self.w4 = Result_ui()
-        self.w4.show()
+        self.w4.showFullScreen()
 
     def jump_to_play(self):
         # 关闭上层窗口
@@ -294,7 +291,7 @@ class Jump_to(VideoWindow):
         self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
 
         # TODO 加上视频播放功能
-        self.fileNameList = [os.getcwd()+'\some2.mp4', os.getcwd()+'\some3.mp4', ]
+        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4',  ]
 
         # 创建播放器和摄像头UI
         VideoWindow.setupVideoUi(self)
@@ -308,9 +305,6 @@ class Jump_to(VideoWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_timer_display)
 
-        # 开始播放,开启倒计时
-        self.play(self.fileNameList)
-        self.timer.start(1000)
 
         #开启摄像头
         self.camera_start()
@@ -321,11 +315,17 @@ class Jump_to(VideoWindow):
         self.w3.horizontalLayout_2.setStretch(0, 1)
         self.w3.horizontalLayout_2.setStretch(1, 1)
 
-        finish_time = time.time() - self.start_time
-        print(finish_time)
 
         self.splash.finish(self.w3)
-        self.w3.show()
+        self.w3.showFullScreen()
+
+        # 开始播放,开启倒计时
+        self.play(self.fileNameList)
+        self.timer.start(1000)
+
+        #计算播放时间
+        finish_time = time.time() - self.start_time
+        print("finish_time:%f" % finish_time)
 
 
     def update_timer_display(self):
@@ -368,8 +368,6 @@ class recv_socket(QThread):
         dict_message = json.loads(message_server)
 
         message = dict_message["message"]
-
-        print(message)
 
         if message == "register success":
             # TODO 需要一些保护机制
@@ -448,7 +446,7 @@ if __name__ == '__main__':
     data = globalData()
 
     w = Scan_dialog()
-    w.show()
+    w.showFullScreen()
 
     #  加载字体
     # QtGui.QFontDatabase.addApplicationFont(":/font/pingfang_sc_cu.ttf")
