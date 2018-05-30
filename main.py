@@ -1,29 +1,25 @@
 # -*- coding: UTF-8 -*-
-# TODO 清空无用的import
-import threading
 import urllib.request
 import websocket
 import simplejson as json
 import qrcode
 import os
-from moviepy.editor import VideoFileClip
-import scan_dialog_ui 
+import math
+import sys
+import time
+
+import scan_dialog_ui
 import player_ui
 import wait_select_ui
 import result_ui
-import math
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QFontDatabase, QFont
+
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer,QCamera,  QCameraImageCapture
-
+from moviepy.editor import VideoFileClip
 from PyQt5.QtMultimediaWidgets import QVideoWidget,QCameraViewfinder
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
-                             QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
-from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton, QAction,QGraphicsScene,QGraphicsView
-from PyQt5.Qt import QImage,QPixmap
-import sys
-import cv2,time
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.Qt import QPixmap
 
 
 SERVER_URL = "ws://dev-accwssail.healthmall.cn/server/bodyAnaylzer/data"
@@ -128,7 +124,6 @@ class VideoWindow(QMainWindow):
 
         self.mediaPlayer.setVideoOutput(self.videoWidget)
 
-        # self.cameraviewfinder.show()
         self.camera.setViewfinder(self.cameraviewfinder)
 
     def exitCall(self):
@@ -206,6 +201,7 @@ class Jump_to(VideoWindow):
         self.sectionList = ""
         self.start_time = 0
         self.fileNameList = []
+
     def jump(self, command):
         global play_times
 
@@ -238,16 +234,12 @@ class Jump_to(VideoWindow):
             # 关闭上层窗口
             w.setHidden(True)
 
-            # 保存学生头像，覆盖默认图片
-            self.memHeadImg = data.get_data("memHeadImg")
-            path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
-            urllib.request.urlretrieve(self.memHeadImg, path)
-
             self.w2 = Wait_ui()
             self.w2.showFullScreen()
 
         elif command == "jumpToPlay":
             self.start_time = time.time()
+            print("开始时间[%f]" % self.start_time)
             self.jump_to_play()
 
         elif command == "jumpToResult":
@@ -267,17 +259,21 @@ class Jump_to(VideoWindow):
         self.w4.showFullScreen()
 
     def jump_to_play(self):
-        # 关闭上层窗口
-        self.w2.setHidden(True)
 
-        # 启动等待界面
-        self.splash = QtWidgets.QSplashScreen(QPixmap('wait'), Qt.WindowStaysOnTopHint)
-        self.splash.show()
+        self.change_thread = change_text()
+        self.change_thread.start()
 
+        print("接收时间[%f]" % (time.time() - self.start_time))
         self.w3 = Player_ui()
+
         # 获取全局变量
         self.courseName = data.get_data("courseName")
         self.memberName = data.get_data("memberName")
+
+        # 保存学生头像，覆盖默认图片
+        self.memHeadImg = data.get_data("memHeadImg")
+        path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
+        urllib.request.urlretrieve(self.memHeadImg, path)
 
         # 设置学生头像
         self.w3.user_icon.setStyleSheet("border-image: url(:/img/AR教学视频v1.0/res/user_icon.jpg);\n"
@@ -291,7 +287,7 @@ class Jump_to(VideoWindow):
         self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
 
         # TODO 加上视频播放功能
-        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4',  ]
+        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', ]
 
         # 创建播放器和摄像头UI
         VideoWindow.setupVideoUi(self)
@@ -305,8 +301,7 @@ class Jump_to(VideoWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_timer_display)
 
-
-        #开启摄像头
+        # 开启摄像头
         self.camera_start()
         self.w3.horizontalLayout_2.addWidget(self.videoWidget)
         self.w3.horizontalLayout_2.addWidget(self.cameraviewfinder)
@@ -315,8 +310,9 @@ class Jump_to(VideoWindow):
         self.w3.horizontalLayout_2.setStretch(0, 1)
         self.w3.horizontalLayout_2.setStretch(1, 1)
 
+        # 关闭上层窗口
+        self.w2.setHidden(True)
 
-        self.splash.finish(self.w3)
         self.w3.showFullScreen()
 
         # 开始播放,开启倒计时
@@ -327,6 +323,8 @@ class Jump_to(VideoWindow):
         finish_time = time.time() - self.start_time
         print("finish_time:%f" % finish_time)
 
+    def update_text(self):
+       pass
 
     def update_timer_display(self):
         self.duration = self.duration - 1
@@ -340,6 +338,21 @@ class Jump_to(VideoWindow):
             self.timer.stop()
             if self.w3.isVisible():
                 self.jump_to_result()
+
+class change_text(QThread):
+    change_trigger = pyqtSignal()
+    def __init__(self):
+        super(change_text, self).__init__()
+
+    # 更改等待界面文字新建线程
+    def run(self):
+        print("发送信号")
+        # self.change_trigger.emit()
+        self.wait_text = "已选课程，请稍等"
+        j.w2.label_2.setText(self.wait_text)
+
+        print("当前text：")
+        print(j.w2.label_2.text())
 
 # 创建服务器连接
 class recv_socket(QThread):
