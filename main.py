@@ -108,6 +108,7 @@ class Result_ui(QtWidgets.QDialog,result_ui.Ui_Dialog):
         self.timer_result.start(5 * 1000)
 
     def auto_finish(self):
+        self.timer_result.stop()
         j.jump("jumpToScan")
 
 # 创建跳转对象
@@ -121,6 +122,8 @@ class Jump_to(object):
         self.sectionList = ""
 
     def jump(self, command):
+        global play_times
+
         if command == "jumpToScan":
             # 关闭上层窗口,防止异常添加保护
             try:
@@ -133,24 +136,33 @@ class Jump_to(object):
             except Exception:
                 print(Exception)
 
+            # 重置播放次数
+            play_times = 0
+
             # 判断是否在视频播放阶段
             try:
                 self.player.pause()
             except Exception:
                 print(Exception)
-            w.exec_()
+
+            w.show()
 
         elif command == "jumpToWait":
             # 关闭上层窗口
             w.reject()
 
             self.w2 = Wait_ui()
-            self.w2.exec_()
+            self.w2.show()
 
         elif command == "jumpToPlay":
+            
             self.jump_to_play()
 
         elif command == "jumpToResult":
+
+            # 重置播放次数
+            play_times = 0
+
             self.jump_to_result()
 
     def jump_to_result(self):
@@ -161,7 +173,7 @@ class Jump_to(object):
         self.player.pause()
 
         self.w4 = Result_ui()
-        self.w4.exec_()
+        self.w4.show()
 
     def jump_to_play(self):
 
@@ -215,7 +227,7 @@ class Jump_to(object):
         self.w3.horizontalLayout_2.setStretch(0, 1)
         self.w3.horizontalLayout_2.setStretch(1, 1)
 
-        self.w3.exec_()
+        self.w3.show()
 
     def update_timer_display(self):
         self.duration = self.duration - 1
@@ -225,6 +237,9 @@ class Jump_to(object):
 
         # 播放结束后自动跳转
         if self.duration == 0:
+            # 关闭定时器
+            self.timer.stop()
+
             if self.w3.isVisible():
                 self.jump_to_result()
 
@@ -269,7 +284,7 @@ class recv_socket(QThread):
 
         elif "failed" in message:
             message_split = message.split()
-            print("[%s]出错:[%s]" % (message_split[0], message_splits[1]))
+            print("[%s]出错:[%s]" % (message_split[0], message_split[1]))
 
         # 解锁界面
         elif message == "unlock":
@@ -355,6 +370,8 @@ class VideoWindow(QMainWindow):
 
     def play_next(self):
         global play_times
+
+        print(play_times)
 
         if play_times == len(self.fileNameList):
                 self.timer_play.stop()
