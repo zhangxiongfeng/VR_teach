@@ -7,7 +7,7 @@ import os
 import math
 import sys
 import time
-
+import threading
 import scan_dialog_ui
 import player_ui
 import wait_select_ui
@@ -190,7 +190,6 @@ class VideoWindow(QMainWindow):
 
 # 创建跳转对象
 class Jump_to(VideoWindow):
-
     def __init__(self):
         super(Jump_to, self).__init__()
         self.duration = 0
@@ -259,24 +258,23 @@ class Jump_to(VideoWindow):
         self.w4.showFullScreen()
 
     def jump_to_play(self):
+        self.wait_text = "已选课程，请稍等"
+        self.w2.label_2.setText( "<html><head/><body><p align=\"center\"><span style=\" font-size:28pt; color:#444a49;letter-spacing:6px\">"+self.wait_text+"</span></p></body></html>")
 
+        self.w3 = Player_ui()
         self.change_thread = change_text()
         self.change_thread.start()
 
-        print("接收时间[%f]" % (time.time() - self.start_time))
-        self.w3 = Player_ui()
+        # 等待线程完成发送信号,防止UI线程阻塞
+        self.change_thread.change_trigger.connect(self.display_player)
 
+    def display_player(self):
         # 获取全局变量
         self.courseName = data.get_data("courseName")
         self.memberName = data.get_data("memberName")
 
-        # 保存学生头像，覆盖默认图片
-        self.memHeadImg = data.get_data("memHeadImg")
-        path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
-        urllib.request.urlretrieve(self.memHeadImg, path)
-
         # 设置学生头像
-        self.w3.user_icon.setStyleSheet("border-image: url(:/img/AR教学视频v1.0/res/user_icon.jpg);\n"
+        self.w3.user_icon.setStyleSheet("border-image: url(:/img/AR教学视频v1.0/res/user_icon.selfpg);\n"
     "border:NONE\n")
 
         # TODO 需要老师名称和头像地址
@@ -287,22 +285,18 @@ class Jump_to(VideoWindow):
         self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
 
         # TODO 加上视频播放功能
-        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', os.getcwd()+'\\teacher_1.mp4', ]
+        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4',]
 
         # 创建播放器和摄像头UI
         VideoWindow.setupVideoUi(self)
+        # 开启摄像头
+        self.camera_start()
 
         # 初始化播放时长,向上取整
         self.duration = math.ceil(self.getDuration(self.fileNameList))
         timer_text = ("%02d:%02d" % (self.duration / 60, (self.duration % 60)))
         self.w3.time.setText("<html><head/><body><p><span style=\" font-size:24pt; color:#ffffff;\">" + str(timer_text) + "</span></p></body></html>")
 
-        # 初始化定时器
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_timer_display)
-
-        # 开启摄像头
-        self.camera_start()
         self.w3.horizontalLayout_2.addWidget(self.videoWidget)
         self.w3.horizontalLayout_2.addWidget(self.cameraviewfinder)
 
@@ -310,21 +304,21 @@ class Jump_to(VideoWindow):
         self.w3.horizontalLayout_2.setStretch(0, 1)
         self.w3.horizontalLayout_2.setStretch(1, 1)
 
+        # 初始化定时器
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update_timer_display)
+
         # 关闭上层窗口
         self.w2.setHidden(True)
-
         self.w3.showFullScreen()
 
         # 开始播放,开启倒计时
         self.play(self.fileNameList)
         self.timer.start(1000)
 
-        #计算播放时间
-        finish_time = time.time() - self.start_time
+        # 计算播放时间
+        finish_time = time.time() - j.start_time
         print("finish_time:%f" % finish_time)
-
-    def update_text(self):
-       pass
 
     def update_timer_display(self):
         self.duration = self.duration - 1
@@ -339,20 +333,21 @@ class Jump_to(VideoWindow):
             if self.w3.isVisible():
                 self.jump_to_result()
 
-class change_text(QThread):
+class change_text(QThread, VideoWindow):
     change_trigger = pyqtSignal()
     def __init__(self):
         super(change_text, self).__init__()
 
     # 更改等待界面文字新建线程
     def run(self):
-        print("发送信号")
-        # self.change_trigger.emit()
-        self.wait_text = "已选课程，请稍等"
-        j.w2.label_2.setText(self.wait_text)
+        print("接收时间[%f]" % (time.time() - j.start_time))
 
-        print("当前text：")
-        print(j.w2.label_2.text())
+        # 保存学生头像，覆盖默认图片
+        self.memHeadImg = data.get_data("memHeadImg")
+        path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
+        urllib.request.urlretrieve(self.memHeadImg, path)
+
+        self.change_trigger.emit()
 
 # 创建服务器连接
 class recv_socket(QThread):
