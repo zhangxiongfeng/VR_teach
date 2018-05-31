@@ -117,6 +117,8 @@ class VideoWindow(QMainWindow):
 
         self.camera = QCamera(0)
         self.cameraviewfinder = QCameraViewfinder()
+        self.cameraviewfinder.setAspectRatioMode(Qt.IgnoreAspectRatio)
+
         self.cameramode = self.camera.CaptureMode(2)
         self.cameraimgcap = QCameraImageCapture(self.camera)
 
@@ -163,7 +165,7 @@ class VideoWindow(QMainWindow):
 
     def camera_start(self):
         # 开启摄像头
-        self.cameraviewfinder.resize(640, 480)
+        # self.cameraviewfinder.resize(640, 480)
         self.camera.start()
 
     # 获取视频时长(单位为秒)
@@ -239,6 +241,7 @@ class Jump_to(VideoWindow):
         elif command == "jumpToPlay":
             self.start_time = time.time()
             print("开始时间[%f]" % self.start_time)
+
             self.jump_to_play()
 
         elif command == "jumpToResult":
@@ -261,12 +264,12 @@ class Jump_to(VideoWindow):
         self.wait_text = "已选课程，请稍等"
         self.w2.label_2.setText( "<html><head/><body><p align=\"center\"><span style=\" font-size:28pt; color:#444a49;letter-spacing:6px\">"+self.wait_text+"</span></p></body></html>")
 
-        self.w3 = Player_ui()
+        # 等待线程完成发送信号,防止UI线程阻塞
         self.change_thread = change_text()
         self.change_thread.start()
-
-        # 等待线程完成发送信号,防止UI线程阻塞
         self.change_thread.change_trigger.connect(self.display_player)
+
+        self.w3 = Player_ui()
 
     def display_player(self):
         # 获取全局变量
@@ -285,7 +288,7 @@ class Jump_to(VideoWindow):
         self.w3.goal_num.setText("<html><head/><body><p><span style=\" font-size:42pt; color:#fff;\">89</span><span style=\" font-size:22pt; color:#939a99;\">/100分</span></p></body></html>")
 
         # TODO 加上视频播放功能
-        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4',]
+        self.fileNameList = [os.getcwd()+'\\teacher_1.mp4', ]
 
         # 创建播放器和摄像头UI
         VideoWindow.setupVideoUi(self)
@@ -343,9 +346,9 @@ class change_text(QThread, VideoWindow):
         print("接收时间[%f]" % (time.time() - j.start_time))
 
         # 保存学生头像，覆盖默认图片
-        self.memHeadImg = data.get_data("memHeadImg")
-        path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
-        urllib.request.urlretrieve(self.memHeadImg, path)
+        # self.memHeadImg = data.get_data("memHeadImg")
+        # path = os.getcwd() + '/AR教学视频v1.0/res/user_icon.jpg'
+        # urllib.request.urlretrieve(self.memHeadImg, path)
 
         self.change_trigger.emit()
 
@@ -437,7 +440,6 @@ class recv_socket(QThread):
         print(error)
 
     def on_open(self, ws):
-
         # 发送机器唯一标识码
         ws.send("{\"message\":\"register\",\"deviceID\":\"AR000001\"}")
 
